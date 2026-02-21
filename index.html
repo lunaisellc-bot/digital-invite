@@ -1,225 +1,1167 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Interactive web invitation" />
-  <title>Invitation</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="Multilingual web invitation (RSVP + Guest Wall + Countdown + Time Capsule)"/>
+  <title>Digital Invite</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0f17;
+      --card:rgba(255,255,255,.06);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.70);
+      --line:rgba(255,255,255,.12);
+      --accent:#7c5cff;
+      --accent2:#00d2ff;
+      --radius:22px;
+      --shadow:0 20px 60px rgba(0,0,0,.35);
+      --font: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font);
+      background:
+        radial-gradient(1200px 800px at 20% -10%, rgba(124,92,255,.35), transparent 60%),
+        radial-gradient(1200px 800px at 100% 10%, rgba(0,210,255,.18), transparent 60%),
+        var(--bg);
+      color:var(--text);
+    }
+    a{color:inherit}
+    .hidden{display:none!important}
 
-  <link rel="stylesheet" href="css/styles.css" />
+    .hero{
+      position:relative;
+      min-height:86vh;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      overflow:hidden;
+      border-bottom:1px solid var(--line);
+    }
+    .hero::before{
+      content:"";
+      position:absolute; inset:-40%;
+      background:
+        radial-gradient(closest-side at 40% 40%, rgba(124,92,255,.55), transparent 62%),
+        radial-gradient(closest-side at 70% 30%, rgba(0,210,255,.35), transparent 60%),
+        radial-gradient(closest-side at 40% 70%, rgba(255,255,255,.10), transparent 60%);
+      filter: blur(10px);
+      transform: rotate(-8deg);
+    }
+    .hero__overlay{
+      position:absolute; inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.72) 60%, rgba(11,15,23,.95) 100%);
+    }
+    .hero__content{
+      position:relative;
+      width:min(1020px,92vw);
+      padding:28px 0 34px;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(0,0,0,.35);
+      border:1px solid var(--line);
+      backdrop-filter:blur(10px);
+      box-shadow:var(--shadow);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    h1{
+      margin:12px 0 8px;
+      font-size:clamp(34px,6vw,64px);
+      line-height:1.03;
+      letter-spacing:-0.03em;
+    }
+    .hero__subtitle{
+      margin:0 0 16px;
+      color:var(--muted);
+      font-size:clamp(14px,2.2vw,18px);
+      max-width:62ch;
+    }
+    .hero__meta{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin:18px 0 16px;
+    }
+    .metaItem{
+      padding:14px;
+      border-radius:16px;
+      background:rgba(0,0,0,.28);
+      border:1px solid var(--line);
+      backdrop-filter:blur(10px);
+    }
+    .metaLabel{display:block;color:var(--muted);font-size:12px}
+    .metaValue{display:block;font-weight:700;margin-top:4px}
+
+    .ctaRow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:14px;
+      align-items:center;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:14px;
+      text-decoration:none;
+      cursor:pointer;
+      font-weight:700;
+      transition:transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+    .btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.18)}
+    .btn--primary{
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      border-color:transparent;
+      color:#071018;
+    }
+    .langWrap{
+      display:flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+    }
+    .langLabel{font-size:12px;color:var(--muted);font-weight:800}
+    .langSelect{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      padding:10px 30px 10px 12px;
+      border-radius:12px;
+      outline:none;
+      cursor:pointer;
+    }
+    .langSelect:focus{border-color:rgba(124,92,255,.55)}
+    .langCaret{margin-left:-26px;pointer-events:none;color:var(--muted)}
+
+    .countdown{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .countBox{
+      min-width:86px;
+      padding:12px;
+      border-radius:16px;
+      background:rgba(0,0,0,.28);
+      border:1px solid var(--line);
+      backdrop-filter:blur(10px);
+      text-align:center;
+    }
+    .countNum{font-size:22px;font-weight:900}
+    .countLbl{font-size:12px;color:var(--muted);margin-top:4px}
+    .main{
+      width:min(1020px,92vw);
+      margin:18px auto 48px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+    .cardHead{
+      display:flex;align-items:center;justify-content:space-between;gap:10px
+    }
+    h2{margin:0 0 10px;font-size:20px;letter-spacing:-.01em}
+    .muted{color:var(--muted);margin:0 0 12px}
+    .micro{color:var(--muted);font-size:12px;margin:10px 0 0}
+    .chip{
+      font-size:12px;color:var(--muted);
+      border:1px solid var(--line);
+      padding:6px 10px;border-radius:999px;
+      background:rgba(255,255,255,.04);
+      white-space:nowrap;
+    }
+    .richText p{margin:0 0 10px}
+    .richText ul{margin:0 0 10px;padding-left:18px}
+    .richText li{margin:6px 0}
+    .pillRow{display:flex;flex-wrap:wrap;gap:8px}
+    .pill{
+      padding:8px 10px;border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      font-size:12px;color:var(--muted);
+    }
+
+    .timeline{display:flex;flex-direction:column;gap:10px}
+    .tItem{
+      display:flex;gap:12px;
+      padding:12px;border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+    }
+    .tTime{min-width:78px;font-weight:900}
+    .tBody{color:var(--muted)}
+    .tTitle{color:var(--text);font-weight:900;margin-bottom:2px}
+
+    .form{display:flex;flex-direction:column;gap:12px}
+    .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .field span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:800}
+    input,select,textarea{
+      width:100%;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.20);
+      color:var(--text);
+      outline:none;
+    }
+    input:focus,select:focus,textarea:focus{border-color:rgba(124,92,255,.55)}
+    .error{color:#ffb3c0;min-height:16px;display:block;margin-top:6px}
+    .toast{
+      margin-top:8px;padding:12px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.22);
+      color:var(--muted);
+      display:none;
+    }
+
+    .guestList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+    .gCard{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:18px;padding:12px}
+    .gTop{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .gName{font-weight:900}
+    .gDate{color:var(--muted);font-size:12px}
+    .gMsg{color:var(--muted);margin-top:8px;white-space:pre-wrap}
+
+    .capsuleBox{
+      border:1px dashed rgba(255,255,255,.18);
+      border-radius:18px;
+      padding:14px;
+      background:rgba(0,0,0,.18);
+    }
+    .lockIcon{font-size:22px}
+    .gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .gCardPh{
+      aspect-ratio:4/5;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:
+        radial-gradient(closest-side at 30% 30%, rgba(124,92,255,.35), transparent 65%),
+        radial-gradient(closest-side at 70% 30%, rgba(0,210,255,.20), transparent 65%),
+        rgba(255,255,255,.04);
+    }
+
+    .footer{padding:6px 4px 0;text-align:center}
+    .footerRow{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:6px}
+    .microLink{
+      background:transparent;border:0;padding:0;
+      font:inherit;color:var(--muted);
+      cursor:pointer;text-decoration:underline;
+    }
+    .dot{color:var(--muted)}
+
+    @media(max-width:780px){
+      .hero__meta{grid-template-columns:1fr}
+      .grid2{grid-template-columns:1fr}
+      .guestList{grid-template-columns:1fr}
+      .gallery{grid-template-columns:1fr 1fr}
+    }
+  </style>
 </head>
 
 <body>
-  <div id="app" class="app" aria-live="polite">
+  <header class="hero" role="banner">
+    <div class="hero__overlay"></div>
+    <div class="hero__content">
+      <div class="badge" id="eventBadge">You're Invited</div>
+      <h1 id="eventTitle">Event Title</h1>
+      <p class="hero__subtitle" id="eventSubtitle">A short tagline goes here.</p>
 
-    <header class="hero" role="banner">
-      <div class="hero__overlay"></div>
-      <img id="heroImage" class="hero__img" alt="" />
-      <div class="hero__content">
-        <div class="badge" id="eventBadge">You're Invited</div>
-        <h1 id="eventTitle">Event Title</h1>
-        <p class="hero__subtitle" id="eventSubtitle">A short tagline goes here.</p>
-
-        <div class="hero__meta">
-          <div class="metaItem">
-            <span class="metaLabel" id="labelDate">Date</span>
-            <span class="metaValue" id="eventDateText">—</span>
-          </div>
-          <div class="metaItem">
-            <span class="metaLabel" id="labelTime">Time</span>
-            <span class="metaValue" id="eventTimeText">—</span>
-          </div>
-          <div class="metaItem">
-            <span class="metaLabel" id="labelLocation">Location</span>
-            <span class="metaValue" id="eventLocationText">—</span>
-          </div>
+      <div class="hero__meta">
+        <div class="metaItem">
+          <span class="metaLabel" id="labelDate">Date</span>
+          <span class="metaValue" id="eventDateText">—</span>
         </div>
+        <div class="metaItem">
+          <span class="metaLabel" id="labelTime">Time</span>
+          <span class="metaValue" id="eventTimeText">—</span>
+        </div>
+        <div class="metaItem">
+          <span class="metaLabel" id="labelLocation">Location</span>
+          <span class="metaValue" id="eventLocationText">—</span>
+        </div>
+      </div>
+
+      <div class="ctaRow">
+        <a id="btnAddToCalendar" class="btn btn--primary" href="#" rel="noopener">Add to Calendar</a>
+        <a id="btnOpenMap" class="btn" href="#" rel="noopener">Open Map</a>
+
+        <div class="langWrap" aria-label="Language">
+          <span class="langLabel" id="langLabel">Language</span>
+          <select id="langSelect" class="langSelect" aria-label="Language selector"></select>
+          <span class="langCaret">▾</span>
+        </div>
+      </div>
+
+      <div class="countdown" aria-label="Countdown">
+        <div class="countBox"><div id="cdDays" class="countNum">0</div><div class="countLbl" id="lblDays">Days</div></div>
+        <div class="countBox"><div id="cdHours" class="countNum">0</div><div class="countLbl" id="lblHours">Hours</div></div>
+        <div class="countBox"><div id="cdMins" class="countNum">0</div><div class="countLbl" id="lblMins">Minutes</div></div>
+        <div class="countBox"><div id="cdSecs" class="countNum">0</div><div class="countLbl" id="lblSecs">Seconds</div></div>
+      </div>
+
+      <p class="micro" id="timezoneNote"></p>
+    </div>
+  </header>
+
+  <main class="main" role="main">
+    <section class="card" id="sectionDetails">
+      <h2 id="detailsTitle">Details</h2>
+      <div id="detailsBody" class="richText"></div>
+      <div class="pillRow" id="quickInfo"></div>
+    </section>
+
+    <section class="card" id="sectionTimeline">
+      <div class="cardHead">
+        <h2 id="timelineTitle">Schedule</h2>
+        <span class="chip" id="timelineChip">What’s happening</span>
+      </div>
+      <div id="timelineList" class="timeline"></div>
+    </section>
+
+    <section class="card" id="sectionRsvp">
+      <h2 id="rsvpTitle">RSVP</h2>
+      <p class="muted" id="rsvpHint">Let us know if you can make it.</p>
+
+      <form id="rsvpForm" class="form" novalidate>
+        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off"/>
+
+        <div class="grid2">
+          <label class="field">
+            <span id="lblName">Name</span>
+            <input id="rsvpName" type="text" required minlength="2" maxlength="60"/>
+            <small class="error" data-err-for="name"></small>
+          </label>
+
+          <label class="field">
+            <span id="lblEmail">Email (optional)</span>
+            <input id="rsvpEmail" type="email" maxlength="120"/>
+            <small class="error" data-err-for="email"></small>
+          </label>
+        </div>
+
+        <div class="grid2">
+          <label class="field">
+            <span id="lblGuests">Guests</span>
+            <input id="rsvpGuests" type="number" min="1" max="20" value="1" required/>
+            <small class="error" data-err-for="guests"></small>
+          </label>
+
+          <label class="field">
+            <span id="lblStatus">Attendance</span>
+            <select id="rsvpStatus" required>
+              <option value="yes">Yes, I’ll be there</option>
+              <option value="no">Sorry, can’t make it</option>
+              <option value="maybe">Maybe</option>
+            </select>
+            <small class="error" data-err-for="status"></small>
+          </label>
+        </div>
+
+        <label class="field">
+          <span id="lblNote">Note (optional)</span>
+          <textarea id="rsvpNote" rows="3" maxlength="400"></textarea>
+          <small class="micro" id="privacyNote"></small>
+        </label>
 
         <div class="ctaRow">
-          <a id="btnAddToCalendar" class="btn btn--primary" href="#" rel="noopener">Add to Calendar</a>
-          <a id="btnOpenMap" class="btn btn--ghost" href="#" rel="noopener">Open Map</a>
-          <button id="btnMusic" class="btn btn--ghost" type="button" aria-pressed="false">Music: Off</button>
-
-          <div class="langWrap" id="langWrap" aria-label="Language">
-            <span class="langLabel" id="langLabel">Language</span>
-            <select id="langSelect" class="langSelect" aria-label="Language selector"></select>
-            <span class="langCaret">▾</span>
-          </div>
+          <button class="btn btn--primary" id="btnSubmitRsvp" type="submit">Send RSVP</button>
+          <button class="btn" id="btnResetRsvp" type="button">Reset</button>
         </div>
 
-        <div class="countdown" aria-label="Countdown">
-          <div class="countBox"><div id="cdDays" class="countNum">0</div><div class="countLbl" id="lblDays">Days</div></div>
-          <div class="countBox"><div id="cdHours" class="countNum">0</div><div class="countLbl" id="lblHours">Hours</div></div>
-          <div class="countBox"><div id="cdMins" class="countNum">0</div><div class="countLbl" id="lblMins">Minutes</div></div>
-          <div class="countBox"><div id="cdSecs" class="countNum">0</div><div class="countLbl" id="lblSecs">Seconds</div></div>
-        </div>
+        <div class="toast" id="rsvpToast" role="status" aria-live="polite"></div>
+      </form>
+    </section>
 
-        <p class="micro" id="timezoneNote"></p>
+    <section class="card" id="sectionGuestWall">
+      <div class="cardHead">
+        <h2 id="guestWallTitle">Guest Wall</h2>
+        <span class="chip" id="guestWallChip">Live messages</span>
       </div>
-    </header>
 
-    <main class="main" role="main">
-      <section class="card" id="sectionDetails">
-        <h2 id="detailsTitle">Details</h2>
-        <div id="detailsBody" class="richText"></div>
-        <div class="pillRow" id="quickInfo"></div>
-      </section>
+      <form id="guestForm" class="form" novalidate>
+        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off"/>
 
-      <section class="card" id="sectionTimeline">
-        <div class="cardHead">
-          <h2 id="timelineTitle">Schedule</h2>
-          <span class="chip" id="timelineChip">What’s happening</span>
-        </div>
-        <div id="timelineList" class="timeline"></div>
-      </section>
-
-      <section class="card" id="sectionRsvp">
-        <h2 id="rsvpTitle">RSVP</h2>
-        <p class="muted" id="rsvpHint">Let us know if you can make it.</p>
-
-        <form id="rsvpForm" class="form" novalidate>
-          <input type="hidden" name="form_type" value="rsvp" />
-          <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
-
-          <div class="grid2">
-            <label class="field">
-              <span id="lblName">Name</span>
-              <input id="rsvpName" name="name" type="text" autocomplete="name" required minlength="2" maxlength="60" />
-              <small class="error" data-err-for="name"></small>
-            </label>
-
-            <label class="field">
-              <span id="lblEmail">Email (optional)</span>
-              <input id="rsvpEmail" name="email" type="email" autocomplete="email" maxlength="120" />
-              <small class="error" data-err-for="email"></small>
-            </label>
-          </div>
-
-          <div class="grid2">
-            <label class="field">
-              <span id="lblGuests">Guests</span>
-              <input id="rsvpGuests" name="guests" type="number" inputmode="numeric" min="1" max="20" value="1" required />
-              <small class="error" data-err-for="guests"></small>
-            </label>
-
-            <label class="field">
-              <span id="lblStatus">Attendance</span>
-              <select id="rsvpStatus" name="status" required>
-                <option value="yes">Yes, I’ll be there</option>
-                <option value="no">Sorry, can’t make it</option>
-                <option value="maybe">Maybe</option>
-              </select>
-              <small class="error" data-err-for="status"></small>
-            </label>
-          </div>
-
+        <div class="grid2">
           <label class="field">
-            <span id="lblNote">Note (optional)</span>
-            <textarea id="rsvpNote" name="note" rows="3" maxlength="400" placeholder=""></textarea>
-            <small class="micro" id="privacyNote"></small>
+            <span id="lblGuestName">Your Name</span>
+            <input id="guestName" type="text" required minlength="2" maxlength="60"/>
           </label>
-
-          <div class="ctaRow">
-            <button class="btn btn--primary" id="btnSubmitRsvp" type="submit">Send RSVP</button>
-            <button class="btn btn--ghost" id="btnResetRsvp" type="button">Reset</button>
-          </div>
-
-          <div class="toast" id="rsvpToast" role="status" aria-live="polite"></div>
-        </form>
-      </section>
-
-      <section class="card" id="sectionGuestWall">
-        <div class="cardHead">
-          <h2 id="guestWallTitle">Guest Wall</h2>
-          <span class="chip" id="guestWallChip">Live messages</span>
-        </div>
-
-        <form id="guestForm" class="form" novalidate>
-          <input type="hidden" name="form_type" value="guest_wall" />
-          <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
-
-          <div class="grid2">
-            <label class="field">
-              <span id="lblGuestName">Your Name</span>
-              <input id="guestName" type="text" required minlength="2" maxlength="60" />
-              <small class="error" data-err-for="guestName"></small>
-            </label>
-            <label class="field">
-              <span id="lblGuestMood">Mood</span>
-              <select id="guestMood">
-                <option value="🎉">🎉 Party</option>
-                <option value="💖">💖 Love</option>
-                <option value="✨">✨ Magic</option>
-                <option value="😂">😂 Fun</option>
-                <option value="🙏">🙏 Blessings</option>
-              </select>
-            </label>
-          </div>
-
           <label class="field">
-            <span id="lblGuestMsg">Message</span>
-            <textarea id="guestMessage" rows="3" required minlength="3" maxlength="240"></textarea>
-            <small class="error" data-err-for="guestMessage"></small>
+            <span id="lblGuestMood">Mood</span>
+            <select id="guestMood">
+              <option value="🎉">🎉 Party</option>
+              <option value="💖">💖 Love</option>
+              <option value="✨">✨ Magic</option>
+              <option value="😂">😂 Fun</option>
+              <option value="🙏">🙏 Blessings</option>
+            </select>
           </label>
-
-          <div class="ctaRow">
-            <button class="btn btn--primary" type="submit" id="btnPostMsg">Post Message</button>
-            <button class="btn btn--ghost" type="button" id="btnClearMsgs">Clear</button>
-          </div>
-          <p class="micro" id="guestWallNote"></p>
-        </form>
-
-        <div id="guestList" class="guestList" aria-label="Guest messages"></div>
-      </section>
-
-      <section class="card" id="sectionCapsule">
-        <div class="cardHead">
-          <h2 id="capsuleTitle">Time Capsule</h2>
-          <span class="chip" id="capsuleChip">Unlock later</span>
         </div>
 
-        <p class="muted" id="capsuleHint"></p>
+        <label class="field">
+          <span id="lblGuestMsg">Message</span>
+          <textarea id="guestMessage" rows="3" required minlength="3" maxlength="240"></textarea>
+        </label>
 
-        <div class="capsuleBox">
-          <div class="capsuleLocked" id="capsuleLocked">
-            <div class="lockIcon" aria-hidden="true">🔒</div>
-            <h3 id="capsuleLockedTitle">Locked</h3>
-            <p class="muted" id="capsuleLockedText">This capsule will open on the reveal date.</p>
-          </div>
-
-          <div class="capsuleOpen hidden" id="capsuleOpen">
-            <div class="lockIcon" aria-hidden="true">🔓</div>
-            <h3 id="capsuleOpenTitle">It’s Open!</h3>
-            <div id="capsuleContent" class="richText"></div>
-          </div>
+        <div class="ctaRow">
+          <button class="btn btn--primary" type="submit" id="btnPostMsg">Post Message</button>
+          <button class="btn" type="button" id="btnClearMsgs">Clear</button>
         </div>
-      </section>
 
-      <section class="card" id="sectionGallery">
-        <h2 id="galleryTitle">Gallery</h2>
-        <div id="galleryGrid" class="gallery" aria-label="Gallery images"></div>
-      </section>
+        <p class="micro" id="guestWallNote"></p>
+      </form>
 
-      <footer class="footer" role="contentinfo">
-        <p class="micro" id="footerText">Made with love.</p>
-        <div class="footerRow">
-          <a class="microLink" id="btnShare" href="#" rel="noopener">Share</a>
-          <span class="dot">•</span>
-          <button class="microLink" id="btnCopyLink" type="button">Copy Link</button>
+      <div id="guestList" class="guestList" aria-label="Guest messages"></div>
+    </section>
+
+    <section class="card" id="sectionCapsule">
+      <div class="cardHead">
+        <h2 id="capsuleTitle">Time Capsule</h2>
+        <span class="chip" id="capsuleChip">Unlock later</span>
+      </div>
+
+      <p class="muted" id="capsuleHint"></p>
+
+      <div class="capsuleBox">
+        <div id="capsuleLocked">
+          <div class="lockIcon" aria-hidden="true">🔒</div>
+          <h3 id="capsuleLockedTitle">Locked</h3>
+          <p class="muted" id="capsuleLockedText">This capsule will open on the reveal date.</p>
         </div>
-      </footer>
-    </main>
-  </div>
 
-  <audio id="audio" preload="none"></audio>
+        <div id="capsuleOpen" class="hidden">
+          <div class="lockIcon" aria-hidden="true">🔓</div>
+          <h3 id="capsuleOpenTitle">It’s Open!</h3>
+          <div id="capsuleContent" class="richText"></div>
+        </div>
+      </div>
+    </section>
 
-  <script src="js/config.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/app.js"></script>
+    <section class="card" id="sectionGallery">
+      <h2 id="galleryTitle">Gallery</h2>
+      <div id="galleryGrid" class="gallery" aria-label="Gallery images"></div>
+      <p class="micro" id="galleryNote"></p>
+    </section>
+
+    <footer class="footer" role="contentinfo">
+      <p class="micro" id="footerText">Made with love.</p>
+      <div class="footerRow">
+        <button class="microLink" id="btnCopyLink" type="button">Copy Link</button>
+        <span class="dot">•</span>
+        <a class="microLink" id="btnShare" href="#" rel="noopener">Share</a>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // ==============================
+    // CONFIG (edit these per customer)
+    // ==============================
+    const CONFIG = {
+      i18n: {
+        defaultLocale: "en",
+        supportedLocales: ["en","tr","es","fr"],
+        autoDetect: true,
+        persistChoice: true
+      },
+      forms: {
+        enableEmailSend: false, // true yapınca Formspree endpoint şart
+        endpoint: "https://formspree.io/f/XXXXYYYY"
+      },
+      event: {
+        startAtLocal: "2026-06-20T16:30:00",
+        endAtLocal:   "2026-06-20T19:30:00",
+        mapUrl: "https://maps.google.com/?q=Rainbow+Garden+Hall",
+        capsuleUnlockAtLocal: "2026-06-21T10:00:00"
+      }
+    };
+
+    // ==============================
+    // DICTS (no external JSON files)
+    // ==============================
+    const DICT = {
+      en: {
+        "lang.name":"English",
+        "badge.invited":"You're Invited",
+        "badge.now_live":"Now Live",
+        "labels.date":"Date",
+        "labels.time":"Time",
+        "labels.location":"Location",
+        "buttons.add_to_calendar":"Add to Calendar",
+        "buttons.open_map":"Open Map",
+        "countdown.days":"Days",
+        "countdown.hours":"Hours",
+        "countdown.minutes":"Minutes",
+        "countdown.seconds":"Seconds",
+        "timezone.note":"Local time shown based on your device.",
+        "select.language":"Language",
+        "sections.details":"Details",
+        "sections.schedule":"Schedule",
+        "chips.whats_happening":"What’s happening",
+        "sections.rsvp":"RSVP",
+        "rsvp.hint":"Let us know if you can make it.",
+        "fields.name":"Name",
+        "fields.email_optional":"Email (optional)",
+        "fields.guests":"Guests",
+        "fields.attendance":"Attendance",
+        "fields.note_optional":"Note (optional)",
+        "rsvp.privacy":"Form is emailed to the host if email sending is enabled. A local copy may also be saved on your device.",
+        "rsvp.send":"Send RSVP",
+        "rsvp.reset":"Reset",
+        "rsvp.toast.sent":"Sent. Thank you!",
+        "rsvp.toast.saved_only":"Email failed, but saved locally.",
+        "rsvp.options.yes":"Yes, I’ll be there",
+        "rsvp.options.no":"Sorry, can’t make it",
+        "rsvp.options.maybe":"Maybe",
+        "guest.title":"Guest Wall",
+        "guest.chip":"Live messages",
+        "guest.note":"Messages are shown locally on this device. Email sending is optional.",
+        "guest.fields.your_name":"Your Name",
+        "guest.fields.mood":"Mood",
+        "guest.fields.message":"Message",
+        "guest.post":"Post Message",
+        "guest.clear":"Clear",
+        "guest.moods.party":"🎉 Party",
+        "guest.moods.love":"💖 Love",
+        "guest.moods.magic":"✨ Magic",
+        "guest.moods.fun":"😂 Fun",
+        "guest.moods.blessings":"🙏 Blessings",
+        "capsule.title":"Time Capsule",
+        "capsule.chip":"Unlock later",
+        "capsule.hint":"A message that becomes available on the reveal date.",
+        "capsule.locked_title":"Locked",
+        "capsule.locked_text":"This capsule will open on the reveal date.",
+        "capsule.open_title":"It’s Open!",
+        "capsule.content_html":"<p><strong>Surprise!</strong> Thank you for being part of this day. 💖</p>",
+        "gallery.title":"Gallery",
+        "gallery.note":"Demo placeholders are used here. For real orders, we place customer photos or themed visuals.",
+        "footer.made":"Made with love.",
+        "share":"Share",
+        "copy_link":"Copy Link",
+        "alerts.link_copied":"Link copied.",
+        "alerts.copy_failed":"Copy failed.",
+        "event.title":"Ava’s 6th Birthday Party",
+        "event.subtitle":"Games, cake, music — and a little surprise at the end.",
+        "event.location_name":"Rainbow Garden Hall",
+        "event.address_short":"Downtown • 2nd Floor",
+        "details.html":"<p>We’re celebrating with music, games, and a sweet cake moment.</p><ul><li>Please arrive 10 minutes early.</li><li>Parents are welcome to stay.</li><li>Kindly RSVP so we can plan the treats.</li></ul>",
+        "quick.0":"Dress code: Colorful",
+        "quick.1":"Bring: Big smiles",
+        "quick.2":"Theme: Magic & Stars"
+      },
+      tr: {
+        "lang.name":"Türkçe",
+        "badge.invited":"Davetlisin",
+        "badge.now_live":"Başladı",
+        "labels.date":"Tarih",
+        "labels.time":"Saat",
+        "labels.location":"Konum",
+        "buttons.add_to_calendar":"Takvime Ekle",
+        "buttons.open_map":"Haritayı Aç",
+        "countdown.days":"Gün",
+        "countdown.hours":"Saat",
+        "countdown.minutes":"Dakika",
+        "countdown.seconds":"Saniye",
+        "timezone.note":"Saatler cihazının yerel saatine göre gösterilir.",
+        "select.language":"Dil",
+        "sections.details":"Detaylar",
+        "sections.schedule":"Akış",
+        "chips.whats_happening":"Neler var",
+        "sections.rsvp":"Katılım",
+        "rsvp.hint":"Katılım durumunu bildir.",
+        "fields.name":"İsim",
+        "fields.email_optional":"E-posta (opsiyonel)",
+        "fields.guests":"Kişi Sayısı",
+        "fields.attendance":"Katılım",
+        "fields.note_optional":"Not (opsiyonel)",
+        "rsvp.privacy":"Mail gönderimi aktifse ev sahibine mail atılır. Cihazında yerel kayıt da tutulabilir.",
+        "rsvp.send":"Gönder",
+        "rsvp.reset":"Sıfırla",
+        "rsvp.toast.sent":"Gönderildi. Teşekkürler!",
+        "rsvp.toast.saved_only":"Mail başarısız ama yerel kayıt alındı.",
+        "rsvp.options.yes":"Evet, geliyorum",
+        "rsvp.options.no":"Maalesef gelemiyorum",
+        "rsvp.options.maybe":"Belki",
+        "guest.title":"Konuk Defteri",
+        "guest.chip":"Canlı mesajlar",
+        "guest.note":"Mesajlar bu cihazda yerel gösterilir. Mail gönderimi opsiyoneldir.",
+        "guest.fields.your_name":"Adın",
+        "guest.fields.mood":"Hava",
+        "guest.fields.message":"Mesaj",
+        "guest.post":"Yayınla",
+        "guest.clear":"Temizle",
+        "guest.moods.party":"🎉 Parti",
+        "guest.moods.love":"💖 Sevgi",
+        "guest.moods.magic":"✨ Sihir",
+        "guest.moods.fun":"😂 Eğlence",
+        "guest.moods.blessings":"🙏 Dualar",
+        "capsule.title":"Zaman Kapsülü",
+        "capsule.chip":"Sonra açılır",
+        "capsule.hint":"Belirlenen tarihte açılan özel mesaj.",
+        "capsule.locked_title":"Kilitli",
+        "capsule.locked_text":"Kapsül açılış tarihinde görüntülenir.",
+        "capsule.open_title":"Açıldı!",
+        "capsule.content_html":"<p><strong>Sürpriz!</strong> Bu günün parçası olduğun için teşekkürler. 💖</p>",
+        "gallery.title":"Galeri",
+        "gallery.note":"Demoda placeholder kullanılıyor. Gerçek siparişte müşteri fotoğrafları veya temalı görseller yerleştiriyoruz.",
+        "footer.made":"Sevgiyle hazırlandı.",
+        "share":"Paylaş",
+        "copy_link":"Linki Kopyala",
+        "alerts.link_copied":"Link kopyalandı.",
+        "alerts.copy_failed":"Kopyalama başarısız.",
+        "event.title":"Ava’nın 6. Yaş Partisi",
+        "event.subtitle":"Oyunlar, pasta, müzik — ve sonunda küçük bir sürpriz.",
+        "event.location_name":"Rainbow Garden Salonu",
+        "event.address_short":"Merkez • 2. Kat",
+        "details.html":"<p>Müzik, oyunlar ve tatlı bir pasta anıyla kutlama yapıyoruz.</p><ul><li>Lütfen 10 dakika erken gelin.</li><li>Ebeveynler kalabilir.</li><li>İkram planı için RSVP rica ederiz.</li></ul>",
+        "quick.0":"Kıyafet: Renkli",
+        "quick.1":"Getir: Kocaman gülüş",
+        "quick.2":"Tema: Sihir & Yıldız"
+      },
+      es: {
+        "lang.name":"Español",
+        "badge.invited":"Estás invitado/a",
+        "badge.now_live":"En vivo",
+        "labels.date":"Fecha",
+        "labels.time":"Hora",
+        "labels.location":"Ubicación",
+        "buttons.add_to_calendar":"Añadir al calendario",
+        "buttons.open_map":"Abrir mapa",
+        "countdown.days":"Días",
+        "countdown.hours":"Horas",
+        "countdown.minutes":"Minutos",
+        "countdown.seconds":"Segundos",
+        "timezone.note":"La hora se muestra según tu dispositivo.",
+        "select.language":"Idioma",
+        "sections.details":"Detalles",
+        "sections.schedule":"Programa",
+        "chips.whats_happening":"Qué pasará",
+        "sections.rsvp":"RSVP",
+        "rsvp.hint":"Cuéntanos si podrás asistir.",
+        "fields.name":"Nombre",
+        "fields.email_optional":"Correo (opcional)",
+        "fields.guests":"Invitados",
+        "fields.attendance":"Asistencia",
+        "fields.note_optional":"Nota (opcional)",
+        "rsvp.privacy":"Si el envío de correo está activo, se envía al anfitrión. También puede guardarse localmente.",
+        "rsvp.send":"Enviar RSVP",
+        "rsvp.reset":"Reiniciar",
+        "rsvp.toast.sent":"Enviado. ¡Gracias!",
+        "rsvp.toast.saved_only":"Falló el correo, pero se guardó localmente.",
+        "rsvp.options.yes":"Sí, asistiré",
+        "rsvp.options.no":"No podré",
+        "rsvp.options.maybe":"Tal vez",
+        "guest.title":"Muro de invitados",
+        "guest.chip":"Mensajes en vivo",
+        "guest.note":"Mensajes locales en este dispositivo. Envío por correo opcional.",
+        "guest.fields.your_name":"Tu nombre",
+        "guest.fields.mood":"Estado",
+        "guest.fields.message":"Mensaje",
+        "guest.post":"Publicar",
+        "guest.clear":"Borrar",
+        "guest.moods.party":"🎉 Fiesta",
+        "guest.moods.love":"💖 Amor",
+        "guest.moods.magic":"✨ Magia",
+        "guest.moods.fun":"😂 Diversión",
+        "guest.moods.blessings":"🙏 Bendiciones",
+        "capsule.title":"Cápsula del tiempo",
+        "capsule.chip":"Abrir después",
+        "capsule.hint":"Un mensaje disponible en la fecha de revelación.",
+        "capsule.locked_title":"Bloqueada",
+        "capsule.locked_text":"Esta cápsula se abrirá en la fecha indicada.",
+        "capsule.open_title":"¡Abierta!",
+        "capsule.content_html":"<p><strong>¡Sorpresa!</strong> Gracias por ser parte de este día. 💖</p>",
+        "gallery.title":"Galería",
+        "gallery.note":"Se usan placeholders en la demo. En pedidos reales se colocan fotos o visuales del tema.",
+        "footer.made":"Hecho con cariño.",
+        "share":"Compartir",
+        "copy_link":"Copiar enlace",
+        "alerts.link_copied":"Enlace copiado.",
+        "alerts.copy_failed":"No se pudo copiar.",
+        "event.title":"Cumpleaños de Ava (6)",
+        "event.subtitle":"Juegos, pastel, música… y una sorpresa al final.",
+        "event.location_name":"Rainbow Garden Hall",
+        "event.address_short":"Centro • 2.º piso",
+        "details.html":"<p>Celebramos con música, juegos y un dulce momento de pastel.</p><ul><li>Llega 10 minutos antes.</li><li>Los padres pueden quedarse.</li><li>Confirma para planear los dulces.</li></ul>",
+        "quick.0":"Código de vestimenta: Colorido",
+        "quick.1":"Trae: Grandes sonrisas",
+        "quick.2":"Tema: Magia y estrellas"
+      },
+      fr: {
+        "lang.name":"Français",
+        "badge.invited":"Vous êtes invité(e)",
+        "badge.now_live":"En cours",
+        "labels.date":"Date",
+        "labels.time":"Heure",
+        "labels.location":"Lieu",
+        "buttons.add_to_calendar":"Ajouter au calendrier",
+        "buttons.open_map":"Ouvrir la carte",
+        "countdown.days":"Jours",
+        "countdown.hours":"Heures",
+        "countdown.minutes":"Minutes",
+        "countdown.seconds":"Secondes",
+        "timezone.note":"Heure affichée selon votre appareil.",
+        "select.language":"Langue",
+        "sections.details":"Détails",
+        "sections.schedule":"Programme",
+        "chips.whats_happening":"Au programme",
+        "sections.rsvp":"RSVP",
+        "rsvp.hint":"Dites-nous si vous pouvez venir.",
+        "fields.name":"Nom",
+        "fields.email_optional":"Email (optionnel)",
+        "fields.guests":"Invités",
+        "fields.attendance":"Présence",
+        "fields.note_optional":"Note (optionnel)",
+        "rsvp.privacy":"Si l’envoi d’email est actif, le formulaire part chez l’hôte. Copie locale possible.",
+        "rsvp.send":"Envoyer RSVP",
+        "rsvp.reset":"Réinitialiser",
+        "rsvp.toast.sent":"Envoyé. Merci !",
+        "rsvp.toast.saved_only":"Email échoué, mais enregistré localement.",
+        "rsvp.options.yes":"Oui, je viens",
+        "rsvp.options.no":"Désolé, je ne peux pas",
+        "rsvp.options.maybe":"Peut-être",
+        "guest.title":"Mur des invités",
+        "guest.chip":"Messages en direct",
+        "guest.note":"Messages locaux sur cet appareil. Envoi email optionnel.",
+        "guest.fields.your_name":"Votre nom",
+        "guest.fields.mood":"Ambiance",
+        "guest.fields.message":"Message",
+        "guest.post":"Publier",
+        "guest.clear":"Effacer",
+        "guest.moods.party":"🎉 Fête",
+        "guest.moods.love":"💖 Amour",
+        "guest.moods.magic":"✨ Magie",
+        "guest.moods.fun":"😂 Fun",
+        "guest.moods.blessings":"🙏 Bénédictions",
+        "capsule.title":"Capsule temporelle",
+        "capsule.chip":"Déverrouiller plus tard",
+        "capsule.hint":"Un message disponible à la date de révélation.",
+        "capsule.locked_title":"Verrouillée",
+        "capsule.locked_text":"Cette capsule s’ouvrira à la date indiquée.",
+        "capsule.open_title":"C’est ouvert !",
+        "capsule.content_html":"<p><strong>Surprise !</strong> Merci de faire partie de cette journée. 💖</p>",
+        "gallery.title":"Galerie",
+        "gallery.note":"Placeholders dans la démo. Sur commande, on place les photos ou visuels du thème.",
+        "footer.made":"Fait avec amour.",
+        "share":"Partager",
+        "copy_link":"Copier le lien",
+        "alerts.link_copied":"Lien copié.",
+        "alerts.copy_failed":"Copie échouée.",
+        "event.title":"Anniversaire d’Ava (6 ans)",
+        "event.subtitle":"Jeux, gâteau, musique — et une surprise à la fin.",
+        "event.location_name":"Rainbow Garden Hall",
+        "event.address_short":"Centre-ville • 2e étage",
+        "details.html":"<p>On fête ça avec de la musique, des jeux et un joli moment gâteau.</p><ul><li>Merci d’arriver 10 minutes en avance.</li><li>Les parents peuvent rester.</li><li>Merci de confirmer pour prévoir les douceurs.</li></ul>",
+        "quick.0":"Tenue : Colorée",
+        "quick.1":"À apporter : De grands sourires",
+        "quick.2":"Thème : Magie & étoiles"
+      }
+    };
+
+    // ==============================
+    // TIMELINE (no external JSON files)
+    // ==============================
+    const TIMELINE = [
+      { time:"16:30", titleKey:"timeline.welcome.title", titleEN:"Welcome", descEN:"Arrivals & photos",
+        titleTR:"Karşılama", descTR:"Geliş & fotoğraf" },
+      { time:"17:00", titleKey:"timeline.games.title", titleEN:"Games", descEN:"Let’s play together",
+        titleTR:"Oyunlar", descTR:"Birlikte oynayalım" },
+      { time:"18:15", titleKey:"timeline.cake.title", titleEN:"Cake Moment", descEN:"Make a wish",
+        titleTR:"Pasta Anı", descTR:"Dilek tut" },
+      { time:"19:00", titleKey:"timeline.goodbyes.title", titleEN:"Goodbyes", descEN:"Thank you for coming",
+        titleTR:"Veda", descTR:"Geldiğin için teşekkürler" }
+    ];
+
+    // ==============================
+    // UTILS + STORE
+    // ==============================
+    const Store = {
+      k:{ locale:"invite_locale_v1", rsvp:"invite_rsvp_v1", guest:"invite_guest_wall_v1" },
+      read(key, fallback){ try{ const raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback; }catch{return fallback;} },
+      write(key,val){ localStorage.setItem(key, JSON.stringify(val)); },
+      getLocale(){ return this.read(this.k.locale, null); },
+      setLocale(v){ this.write(this.k.locale, v); },
+      getGuestMessages(){ return this.read(this.k.guest, []); },
+      addGuestMessage(msg){
+        const arr=this.read(this.k.guest, []);
+        arr.unshift(msg);
+        this.write(this.k.guest, arr.slice(0,60));
+      },
+      clearGuestMessages(){ this.write(this.k.guest, []); }
+    };
+
+    const $ = (id)=>document.getElementById(id);
+    const now = ()=>new Date();
+    const fmtDate = (dt)=>{ const d=new Date(dt); return isNaN(d)? "—" : d.toLocaleDateString(undefined,{weekday:"short",year:"numeric",month:"short",day:"numeric"}); };
+    const fmtTime = (dt)=>{ const d=new Date(dt); return isNaN(d)? "—" : d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"}); };
+    const toast = (el,msg)=>{ el.textContent=msg; el.style.display="block"; clearTimeout(el.__t); el.__t=setTimeout(()=>el.style.display="none",3200); };
+
+    // ==============================
+    // I18N CORE
+    // ==============================
+    let locale = CONFIG.i18n.defaultLocale;
+
+    const supported = CONFIG.i18n.supportedLocales;
+
+    function normalizeLocale(l){
+      if(!l) return supported[0];
+      l=String(l).toLowerCase();
+      const short=l.split("-")[0];
+      if(supported.includes(l)) return l;
+      if(supported.includes(short)) return short;
+      return supported[0];
+    }
+
+    function detectLocale(){
+      return normalizeLocale(navigator.language || "");
+    }
+
+    function t(key){
+      return (DICT[locale] && DICT[locale][key]) ? DICT[locale][key] : key;
+    }
+
+    function applyText(){
+      $("eventBadge").textContent = t("badge.invited");
+      $("eventTitle").textContent = t("event.title");
+      $("eventSubtitle").textContent = t("event.subtitle");
+
+      $("labelDate").textContent = t("labels.date");
+      $("labelTime").textContent = t("labels.time");
+      $("labelLocation").textContent = t("labels.location");
+
+      $("btnAddToCalendar").textContent = t("buttons.add_to_calendar");
+      $("btnOpenMap").textContent = t("buttons.open_map");
+      $("btnOpenMap").href = CONFIG.event.mapUrl;
+
+      const start = new Date(CONFIG.event.startAtLocal);
+      const end = new Date(CONFIG.event.endAtLocal);
+      $("eventDateText").textContent = fmtDate(start);
+      $("eventTimeText").textContent = `${fmtTime(start)} – ${fmtTime(end)}`;
+      $("eventLocationText").textContent = `${t("event.location_name")} • ${t("event.address_short")}`;
+
+      $("lblDays").textContent = t("countdown.days");
+      $("lblHours").textContent = t("countdown.hours");
+      $("lblMins").textContent = t("countdown.minutes");
+      $("lblSecs").textContent = t("countdown.seconds");
+      $("timezoneNote").textContent = t("timezone.note");
+
+      $("detailsTitle").textContent = t("sections.details");
+      $("detailsBody").innerHTML = t("details.html");
+
+      const quick = $("quickInfo");
+      quick.innerHTML="";
+      [0,1,2].forEach(i=>{
+        const s=document.createElement("span");
+        s.className="pill";
+        s.textContent=t(`quick.${i}`);
+        quick.appendChild(s);
+      });
+
+      $("timelineTitle").textContent = t("sections.schedule");
+      $("timelineChip").textContent = t("chips.whats_happening");
+
+      $("rsvpTitle").textContent = t("sections.rsvp");
+      $("rsvpHint").textContent = t("rsvp.hint");
+      $("lblName").textContent = t("fields.name");
+      $("lblEmail").textContent = t("fields.email_optional");
+      $("lblGuests").textContent = t("fields.guests");
+      $("lblStatus").textContent = t("fields.attendance");
+      $("lblNote").textContent = t("fields.note_optional");
+      $("privacyNote").textContent = t("rsvp.privacy");
+      $("btnSubmitRsvp").textContent = t("rsvp.send");
+      $("btnResetRsvp").textContent = t("rsvp.reset");
+
+      const status = $("rsvpStatus");
+      status.querySelector('option[value="yes"]').textContent = t("rsvp.options.yes");
+      status.querySelector('option[value="no"]').textContent = t("rsvp.options.no");
+      status.querySelector('option[value="maybe"]').textContent = t("rsvp.options.maybe");
+
+      $("guestWallTitle").textContent = t("guest.title");
+      $("guestWallChip").textContent = t("guest.chip");
+      $("guestWallNote").textContent = t("guest.note");
+      $("lblGuestName").textContent = t("guest.fields.your_name");
+      $("lblGuestMood").textContent = t("guest.fields.mood");
+      $("lblGuestMsg").textContent = t("guest.fields.message");
+      $("btnPostMsg").textContent = t("guest.post");
+      $("btnClearMsgs").textContent = t("guest.clear");
+
+      const mood = $("guestMood");
+      mood.options[0].textContent = t("guest.moods.party");
+      mood.options[1].textContent = t("guest.moods.love");
+      mood.options[2].textContent = t("guest.moods.magic");
+      mood.options[3].textContent = t("guest.moods.fun");
+      mood.options[4].textContent = t("guest.moods.blessings");
+
+      $("capsuleTitle").textContent = t("capsule.title");
+      $("capsuleChip").textContent = t("capsule.chip");
+      $("capsuleHint").textContent = t("capsule.hint");
+      $("capsuleLockedTitle").textContent = t("capsule.locked_title");
+      $("capsuleLockedText").textContent = t("capsule.locked_text");
+      $("capsuleOpenTitle").textContent = t("capsule.open_title");
+      $("capsuleContent").innerHTML = t("capsule.content_html");
+
+      $("galleryTitle").textContent = t("gallery.title");
+      $("galleryNote").textContent = t("gallery.note");
+
+      $("footerText").textContent = t("footer.made");
+      $("btnCopyLink").textContent = t("copy_link");
+      $("btnShare").textContent = t("share");
+    }
+
+    function buildLang(){
+      const sel=$("langSelect");
+      sel.innerHTML="";
+      supported.forEach(code=>{
+        const opt=document.createElement("option");
+        opt.value=code;
+        opt.textContent=(DICT[code] && DICT[code]["lang.name"]) ? DICT[code]["lang.name"] : code.toUpperCase();
+        sel.appendChild(opt);
+      });
+      $("langLabel").textContent = t("select.language");
+      sel.value=locale;
+      sel.addEventListener("change", ()=>{
+        locale = normalizeLocale(sel.value);
+        if(CONFIG.i18n.persistChoice) Store.setLocale(locale);
+        applyText();
+        renderTimeline();
+      });
+    }
+
+    // ==============================
+    // COUNTDOWN
+    // ==============================
+    function startCountdown(){
+      const target = new Date(CONFIG.event.startAtLocal).getTime();
+      function tick(){
+        const diff = target - Date.now();
+        if(diff<=0){
+          $("cdDays").textContent=0; $("cdHours").textContent=0; $("cdMins").textContent=0; $("cdSecs").textContent=0;
+          $("eventBadge").textContent = t("badge.now_live");
+          return;
+        }
+        const d=Math.floor(diff/86400000);
+        const h=Math.floor(diff%86400000/3600000);
+        const m=Math.floor(diff%3600000/60000);
+        const s=Math.floor(diff%60000/1000);
+        $("cdDays").textContent=d; $("cdHours").textContent=h; $("cdMins").textContent=m; $("cdSecs").textContent=s;
+      }
+      tick();
+      setInterval(tick,1000);
+    }
+
+    // ==============================
+    // TIMELINE RENDER
+    // ==============================
+    function renderTimeline(){
+      const list=$("timelineList");
+      list.innerHTML="";
+      TIMELINE.forEach(it=>{
+        let title=it.titleEN, desc=it.descEN;
+        if(locale==="tr"){ title=it.titleTR; desc=it.descTR; }
+        // ES/FR fallback = EN (demo)
+        const row=document.createElement("div");
+        row.className="tItem";
+        row.innerHTML = `
+          <div class="tTime">${it.time}</div>
+          <div class="tBody">
+            <div class="tTitle">${title}</div>
+            <div>${desc}</div>
+          </div>`;
+        list.appendChild(row);
+      });
+    }
+
+    // ==============================
+    // TIME CAPSULE
+    // ==============================
+    function capsule(){
+      const unlock = new Date(CONFIG.event.capsuleUnlockAtLocal).getTime();
+      const open = Date.now() >= unlock;
+      $("capsuleLocked").classList.toggle("hidden", open);
+      $("capsuleOpen").classList.toggle("hidden", !open);
+    }
+
+    // ==============================
+    // GALLERY PLACEHOLDERS
+    // ==============================
+    function gallery(){
+      const grid=$("galleryGrid");
+      grid.innerHTML="";
+      for(let i=0;i<6;i++){
+        const d=document.createElement("div");
+        d.className="gCardPh";
+        grid.appendChild(d);
+      }
+    }
+
+    // ==============================
+    // FORMS (local + optional email)
+    // ==============================
+    async function sendEmail(payload, gotcha){
+      if(!CONFIG.forms.enableEmailSend) return { ok:true, skipped:true };
+      if(gotcha && gotcha.trim()!=="") return { ok:false, bot:true };
+      const ep=String(CONFIG.forms.endpoint||"").trim();
+      if(!ep.startsWith("https://formspree.io/")) return { ok:false };
+
+      const body=new URLSearchParams();
+      Object.entries(payload).forEach(([k,v])=>body.append(k, String(v??"")));
+      const res=await fetch(ep,{method:"POST",headers:{Accept:"application/json"},body});
+      return { ok:res.ok };
+    }
+
+    function wireRSVP(){
+      const form=$("rsvpForm");
+      const toastEl=$("rsvpToast");
+
+      $("btnResetRsvp").addEventListener("click", ()=>{
+        form.reset();
+        toast(toastEl, t("rsvp.reset"));
+      });
+
+      form.addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        const gotcha=form.querySelector('input[name="_gotcha"]').value;
+
+        const payload={
+          form_type:"rsvp",
+          name:$("rsvpName").value.trim(),
+          email:$("rsvpEmail").value.trim(),
+          guests:$("rsvpGuests").value,
+          status:$("rsvpStatus").value,
+          note:$("rsvpNote").value.trim(),
+          locale,
+          event_title:t("event.title"),
+          page_url:location.href,
+          createdAt:new Date().toISOString()
+        };
+
+        const r=await sendEmail(payload, gotcha);
+        if(r.ok) toast(toastEl, t("rsvp.toast.sent"));
+        else if(!r.bot) toast(toastEl, t("rsvp.toast.saved_only"));
+      });
+    }
+
+    function renderGuestList(){
+      const list=$("guestList");
+      list.innerHTML="";
+      const msgs=Store.getGuestMessages();
+      msgs.forEach(m=>{
+        const card=document.createElement("div");
+        card.className="gCard";
+        const d=new Date(m.createdAt);
+        card.innerHTML=`
+          <div class="gTop">
+            <div class="gName">${m.mood} ${m.name}</div>
+            <div class="gDate">${isNaN(d)? "": d.toLocaleString()}</div>
+          </div>
+          <div class="gMsg">${m.message}</div>`;
+        list.appendChild(card);
+      });
+    }
+
+    function wireGuest(){
+      $("btnClearMsgs").addEventListener("click", ()=>{
+        Store.clearGuestMessages();
+        renderGuestList();
+      });
+
+      $("guestForm").addEventListener("submit", async (e)=>{
+        e.preventDefault();
+        const gotcha=$("guestForm").querySelector('input[name="_gotcha"]').value;
+
+        const payload={
+          form_type:"guest_wall",
+          name:$("guestName").value.trim(),
+          mood:$("guestMood").value,
+          message:$("guestMessage").value.trim(),
+          locale,
+          event_title:t("event.title"),
+          page_url:location.href,
+          createdAt:new Date().toISOString()
+        };
+
+        const r=await sendEmail(payload, gotcha);
+        if(!r.bot){
+          Store.addGuestMessage(payload);
+          $("guestMessage").value="";
+          renderGuestList();
+        }
+      });
+    }
+
+    // ==============================
+    // SHARE / COPY
+    // ==============================
+    function wireShare(){
+      $("btnCopyLink").addEventListener("click", async ()=>{
+        try{ await navigator.clipboard.writeText(location.href); alert(t("alerts.link_copied")); }
+        catch{ alert(t("alerts.copy_failed")); }
+      });
+      $("btnShare").addEventListener("click", async (e)=>{
+        e.preventDefault();
+        try{
+          if(navigator.share) await navigator.share({title:t("event.title"),url:location.href});
+          else { await navigator.clipboard.writeText(location.href); alert(t("alerts.link_copied")); }
+        }catch{}
+      });
+    }
+
+    // ==============================
+    // CALENDAR LINK
+    // ==============================
+    function isoForCalendar(localIso){
+      const d=new Date(localIso);
+      if(isNaN(d)) return null;
+      const pad=(x)=>String(x).padStart(2,"0");
+      return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    }
+    function setCalendar(){
+      const start=isoForCalendar(CONFIG.event.startAtLocal);
+      const end=isoForCalendar(CONFIG.event.endAtLocal);
+      const title=encodeURIComponent(t("event.title"));
+      const details=encodeURIComponent((new DOMParser().parseFromString(t("details.html"),"text/html").body.textContent||"").trim());
+      const loc=encodeURIComponent(`${t("event.location_name")} - ${t("event.address_short")}`);
+      const url=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${loc}`;
+      $("btnAddToCalendar").href=url;
+    }
+
+    // ==============================
+    // BOOT
+    // ==============================
+    (function boot(){
+      // locale decision
+      const saved=Store.getLocale();
+      if(saved && CONFIG.i18n.persistChoice) locale=normalizeLocale(saved);
+      else if(CONFIG.i18n.autoDetect) locale=detectLocale();
+
+      buildLang();
+      applyText();
+      renderTimeline();
+      setCalendar();
+      startCountdown();
+      capsule();
+      setInterval(capsule, 20000);
+      gallery();
+      renderGuestList();
+      wireRSVP();
+      wireGuest();
+      wireShare();
+    })();
+  </script>
 </body>
 </html>
