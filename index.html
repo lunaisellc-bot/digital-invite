@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Interactive web invitation" />
+  <title>Invitation</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+  <div id="app" class="app" aria-live="polite">
+
+    <header class="hero" role="banner">
+      <div class="hero__overlay"></div>
+      <img id="heroImage" class="hero__img" alt="" />
+      <div class="hero__content">
+        <div class="badge" id="eventBadge">You're Invited</div>
+        <h1 id="eventTitle">Event Title</h1>
+        <p class="hero__subtitle" id="eventSubtitle">A short tagline goes here.</p>
+
+        <div class="hero__meta">
+          <div class="metaItem">
+            <span class="metaLabel" id="labelDate">Date</span>
+            <span class="metaValue" id="eventDateText">—</span>
+          </div>
+          <div class="metaItem">
+            <span class="metaLabel" id="labelTime">Time</span>
+            <span class="metaValue" id="eventTimeText">—</span>
+          </div>
+          <div class="metaItem">
+            <span class="metaLabel" id="labelLocation">Location</span>
+            <span class="metaValue" id="eventLocationText">—</span>
+          </div>
+        </div>
+
+        <div class="ctaRow">
+          <a id="btnAddToCalendar" class="btn btn--primary" href="#" rel="noopener">Add to Calendar</a>
+          <a id="btnOpenMap" class="btn btn--ghost" href="#" rel="noopener">Open Map</a>
+          <button id="btnMusic" class="btn btn--ghost" type="button" aria-pressed="false">Music: Off</button>
+
+          <div class="langWrap" id="langWrap" aria-label="Language">
+            <span class="langLabel" id="langLabel">Language</span>
+            <select id="langSelect" class="langSelect" aria-label="Language selector"></select>
+            <span class="langCaret">▾</span>
+          </div>
+        </div>
+
+        <div class="countdown" aria-label="Countdown">
+          <div class="countBox"><div id="cdDays" class="countNum">0</div><div class="countLbl" id="lblDays">Days</div></div>
+          <div class="countBox"><div id="cdHours" class="countNum">0</div><div class="countLbl" id="lblHours">Hours</div></div>
+          <div class="countBox"><div id="cdMins" class="countNum">0</div><div class="countLbl" id="lblMins">Minutes</div></div>
+          <div class="countBox"><div id="cdSecs" class="countNum">0</div><div class="countLbl" id="lblSecs">Seconds</div></div>
+        </div>
+
+        <p class="micro" id="timezoneNote"></p>
+      </div>
+    </header>
+
+    <main class="main" role="main">
+      <section class="card" id="sectionDetails">
+        <h2 id="detailsTitle">Details</h2>
+        <div id="detailsBody" class="richText"></div>
+        <div class="pillRow" id="quickInfo"></div>
+      </section>
+
+      <section class="card" id="sectionTimeline">
+        <div class="cardHead">
+          <h2 id="timelineTitle">Schedule</h2>
+          <span class="chip" id="timelineChip">What’s happening</span>
+        </div>
+        <div id="timelineList" class="timeline"></div>
+      </section>
+
+      <section class="card" id="sectionRsvp">
+        <h2 id="rsvpTitle">RSVP</h2>
+        <p class="muted" id="rsvpHint">Let us know if you can make it.</p>
+
+        <form id="rsvpForm" class="form" novalidate>
+          <input type="hidden" name="form_type" value="rsvp" />
+          <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+
+          <div class="grid2">
+            <label class="field">
+              <span id="lblName">Name</span>
+              <input id="rsvpName" name="name" type="text" autocomplete="name" required minlength="2" maxlength="60" />
+              <small class="error" data-err-for="name"></small>
+            </label>
+
+            <label class="field">
+              <span id="lblEmail">Email (optional)</span>
+              <input id="rsvpEmail" name="email" type="email" autocomplete="email" maxlength="120" />
+              <small class="error" data-err-for="email"></small>
+            </label>
+          </div>
+
+          <div class="grid2">
+            <label class="field">
+              <span id="lblGuests">Guests</span>
+              <input id="rsvpGuests" name="guests" type="number" inputmode="numeric" min="1" max="20" value="1" required />
+              <small class="error" data-err-for="guests"></small>
+            </label>
+
+            <label class="field">
+              <span id="lblStatus">Attendance</span>
+              <select id="rsvpStatus" name="status" required>
+                <option value="yes">Yes, I’ll be there</option>
+                <option value="no">Sorry, can’t make it</option>
+                <option value="maybe">Maybe</option>
+              </select>
+              <small class="error" data-err-for="status"></small>
+            </label>
+          </div>
+
+          <label class="field">
+            <span id="lblNote">Note (optional)</span>
+            <textarea id="rsvpNote" name="note" rows="3" maxlength="400" placeholder=""></textarea>
+            <small class="micro" id="privacyNote"></small>
+          </label>
+
+          <div class="ctaRow">
+            <button class="btn btn--primary" id="btnSubmitRsvp" type="submit">Send RSVP</button>
+            <button class="btn btn--ghost" id="btnResetRsvp" type="button">Reset</button>
+          </div>
+
+          <div class="toast" id="rsvpToast" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section class="card" id="sectionGuestWall">
+        <div class="cardHead">
+          <h2 id="guestWallTitle">Guest Wall</h2>
+          <span class="chip" id="guestWallChip">Live messages</span>
+        </div>
+
+        <form id="guestForm" class="form" novalidate>
+          <input type="hidden" name="form_type" value="guest_wall" />
+          <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+
+          <div class="grid2">
+            <label class="field">
+              <span id="lblGuestName">Your Name</span>
+              <input id="guestName" type="text" required minlength="2" maxlength="60" />
+              <small class="error" data-err-for="guestName"></small>
+            </label>
+            <label class="field">
+              <span id="lblGuestMood">Mood</span>
+              <select id="guestMood">
+                <option value="🎉">🎉 Party</option>
+                <option value="💖">💖 Love</option>
+                <option value="✨">✨ Magic</option>
+                <option value="😂">😂 Fun</option>
+                <option value="🙏">🙏 Blessings</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span id="lblGuestMsg">Message</span>
+            <textarea id="guestMessage" rows="3" required minlength="3" maxlength="240"></textarea>
+            <small class="error" data-err-for="guestMessage"></small>
+          </label>
+
+          <div class="ctaRow">
+            <button class="btn btn--primary" type="submit" id="btnPostMsg">Post Message</button>
+            <button class="btn btn--ghost" type="button" id="btnClearMsgs">Clear</button>
+          </div>
+          <p class="micro" id="guestWallNote"></p>
+        </form>
+
+        <div id="guestList" class="guestList" aria-label="Guest messages"></div>
+      </section>
+
+      <section class="card" id="sectionCapsule">
+        <div class="cardHead">
+          <h2 id="capsuleTitle">Time Capsule</h2>
+          <span class="chip" id="capsuleChip">Unlock later</span>
+        </div>
+
+        <p class="muted" id="capsuleHint"></p>
+
+        <div class="capsuleBox">
+          <div class="capsuleLocked" id="capsuleLocked">
+            <div class="lockIcon" aria-hidden="true">🔒</div>
+            <h3 id="capsuleLockedTitle">Locked</h3>
+            <p class="muted" id="capsuleLockedText">This capsule will open on the reveal date.</p>
+          </div>
+
+          <div class="capsuleOpen hidden" id="capsuleOpen">
+            <div class="lockIcon" aria-hidden="true">🔓</div>
+            <h3 id="capsuleOpenTitle">It’s Open!</h3>
+            <div id="capsuleContent" class="richText"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="sectionGallery">
+        <h2 id="galleryTitle">Gallery</h2>
+        <div id="galleryGrid" class="gallery" aria-label="Gallery images"></div>
+      </section>
+
+      <footer class="footer" role="contentinfo">
+        <p class="micro" id="footerText">Made with love.</p>
+        <div class="footerRow">
+          <a class="microLink" id="btnShare" href="#" rel="noopener">Share</a>
+          <span class="dot">•</span>
+          <button class="microLink" id="btnCopyLink" type="button">Copy Link</button>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <audio id="audio" preload="none"></audio>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
